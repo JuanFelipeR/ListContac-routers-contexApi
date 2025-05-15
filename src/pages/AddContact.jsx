@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer"; // Custom hook for accessing the global state.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export const AddContact = () => {
   // Access the global state and dispatch function using the useGlobalReducer hook.
   const { store, dispatch } = useGlobalReducer();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [inputContact, setInputContact] = useState({
     name: "",
@@ -16,14 +17,34 @@ export const AddContact = () => {
     address: "",
   });
 
+  // 1. Crear la agenda si no existe
+    const createAgenda = async () => {
+      try {
+        await fetch(
+          "https://playground.4geeks.com/apis/fake/contact/agenda/JuanFelipeR",
+          {
+            method: "POST",
+          }
+        );
+        console.log("Agenda creada o ya existente");
+      } catch (error) {
+        console.error("Error creando agenda:", error);
+      }
+    };
+
+    // 2. Llamar esta función en un useEffect o antes de guardar contacto
+    useEffect(() => {
+      createAgenda();
+    }, []);
+
   const handleChange = (e) => {
     const field = e.target.dataset.field; // obtenemos el valor de data-field data-field="fullName"	e.target.dataset.field → "fullNamr"
     const value = e.target.value;
     setInputContact({ ...inputContact, [field]: value });
   };
 
-
   async function AddContacts() {
+
 
     try {
       const response = await fetch(
@@ -33,25 +54,25 @@ export const AddContact = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(
-            {
-              "name": inputContact.name,
-              "phone": inputContact.phone,
-              "email": inputContact.email,
-              "address": inputContact.address
-            }
-          )
+          body: JSON.stringify({
+            name: inputContact.name,
+            phone: inputContact.phone,
+            email: inputContact.email,
+            address: inputContact.address,
+          }),
         }
       );
 
-      console.log (response)
-      if (response.status == 201) {
+      if (response.status == 404) {
+        createAgenda();
+        return;
+      }
 
-        navigate("/home")
-       
-        } 
-         
-      
+      console.log(response);
+      if (response.status == 201) {
+        navigate("/home");
+      }
+
       // console.log(data);
     } catch (error) {
       console.error("Server error contacts:", error);
@@ -60,7 +81,7 @@ export const AddContact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault(); // evita recarga de página
-    AddContacts()
+    AddContacts();
   };
 
   return (
