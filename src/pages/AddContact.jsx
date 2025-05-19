@@ -21,7 +21,7 @@ export const AddContact = () => {
     const createAgenda = async () => {
       try {
         await fetch(
-          "https://playground.4geeks.com/apis/fake/contact/agenda/JuanFelipeR",
+          "https://playground.4geeks.com/contact/agendas/JuanFelipeR",
           {
             method: "POST",
           }
